@@ -21,22 +21,31 @@ class Boundary {
     );
   }
 }
-
-const boundaries = [
-    new Boundary({
-        position: {
-          x: 0,
-          y: 0
-        }
-      }),
-      new Boundary({
-        position: {
-          x: 41,
-          y: 0
-        }
-      })
-      
+const map = [
+    ['-','-','-','-','-','-',],
+    ['-',' ',' ',' ',' ','-',],
+    ['-',' ',' ',' ',' ','-',],
+    ['-','-','-','-','-','-',]
 ]
+const boundaries = []
+
+map.forEach(row => {
+    row.forEach(symbol => {
+        switch (symbol) {
+        case '-':
+        boundaries.push (
+            new Boundary ({
+                position: {
+                   x:0,
+                   y:0 
+                }
+            })
+        )
+        break
+        }  
+     })
+})
+
 boundaries.forEach((boundary) => {
     boundary.draw()
 })
