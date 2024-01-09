@@ -44,24 +44,45 @@ update() {
 }
 }
 
-const map = [
-    ['-','-','-','-','-','-',],
-    ['-',' ',' ',' ',' ','-',],
-    ['-',' ','-','-',' ','-',],
-    ['-',' ',' ',' ',' ','-',],
-    ['-','-','-','-','-','-',]
-]
 const boundaries = []
 const player = new Player({
   position: {
-    x: 40,
-    y:40
+    x: Boundary.width + Boundary.width / 2, 
+    y:Boundary.height + Boundary.height / 2
   },
   velocity: {
     x: 0,
     y: 0
   }
 })
+
+const keys = { 
+  w: {
+    pressed:false
+  },
+  a: {
+    pressed:false
+  },
+  s: {
+    pressed:false
+  },
+  d: {
+    pressed:false
+  },
+}
+
+let lastkey = ''
+
+const map = [
+  ['-','-','-','-','-','-','-'],
+  ['-',' ',' ',' ',' ',' ','-'],
+  ['-',' ','-',' ','-',' ','-'],
+  ['-',' ',' ',' ',' ',' ','-'],
+  ['-',' ','-',' ','-',' ','-'],
+  ['-',' ',' ',' ',' ',' ','-'],
+  ['-','-','-','-','-','-','-',]
+]
+
 map.forEach((row, i) => {
     row.forEach((symbol, j) => {
         switch (symbol) {
@@ -78,32 +99,140 @@ map.forEach((row, i) => {
         }
      })
 })
+function circleCollidesWithRectangle({
+circle,
+rectangle
+}) {
+  return (
+    circle.position.y - circle.radius + circle.velocity.y 
+      <= 
+      rectangle.position.y + rectangle.height && circle.position.x + circle.radius +circle.velocity.x 
+      >= 
+      rectangle.position.x && circle.position.y + circle.radius + circle.velocity.y
+      >= 
+      rectangle.position.y && circle.position.x - circle.radius + circle.velocity.x
+      <= 
+      rectangle.position.x + rectangle.width
+  )
+}
+
 
 function animate () {
   requestAnimationFrame(animate)
   c.clearRect(0,0, canvas.width, canvas.height)
+  if (keys.w.pressed && lastkey === 'w') {
+   for (let i = 0; i < boundaries.length; i++) {
+    const boundary = boundaries[i]
+    if (
+      circleCollidesWithRectangle({
+       circle: {...player, velocity: {
+        x: 0,
+        y: -5
+       }},
+       rectangle: boundary
+     })
+     ) {
+    player.velocity.y = 0
+    break
+     } else {
+      player.velocity.y = -5
+     }
+   }
+  } else if (keys.a.pressed && lastkey === 'a') {
+    for (let i = 0; i < boundaries.length; i++) {
+      const boundary = boundaries[i]
+      if (
+        circleCollidesWithRectangle({
+         circle: {...player, velocity: {
+          x: -5,
+          y: 0
+         }},
+         rectangle: boundary
+       })
+       ) {
+      player.velocity.x = 0
+      break
+       } else {
+        player.velocity.x = -5
+       }
+  }
+}
+    else if (keys.s.pressed && lastkey === 's') {
+      for (let i = 0; i < boundaries.length; i++) {
+        const boundary = boundaries[i]
+        if (
+          circleCollidesWithRectangle({
+           circle: {...player, velocity: {
+            x: 0,
+            y: 5
+           }},
+           rectangle: boundary
+         })
+         ) {
+        player.velocity.y = 0
+        break
+         } else {
+          player.velocity.y = 5
+         }
+       }
+    }
+      else if (keys.d.pressed && lastkey === 'd') {
+        for (let i = 0; i < boundaries.length; i++) {
+          const boundary = boundaries[i]
+          if (
+            circleCollidesWithRectangle({
+             circle: {...player, velocity: {
+              x: 5,
+              y: 0
+             }},
+             rectangle: boundary
+           })
+           ) {
+          player.velocity.x = 0
+          break
+           } else {
+            player.velocity.x = 5
+           }
+      }
+    }
   boundaries.forEach((boundary) => {
     boundary.draw()
+
+    if (
+     circleCollidesWithRectangle({
+      circle: player,
+      rectangle: boundary
+    })
+    ) {
+      console.log("We are colliding")
+      player.velocity.x = 0
+      player.velocity.y = 0
+    }
 })
 
 player.update()
-}
+
+} 
 
 animate()
 
 addEventListener ('keydown', ({key}) => {
 switch (key) {
   case 'w' : 
-  player.velocity.y = -5
+  keys.w.pressed = true
+  lastkey = 'w'
   break
   case 'a' : 
-  player.velocity.x = -5
+  keys.a.pressed = true
+  lastkey = 'a'
   break
   case 's' : 
-  player.velocity.y = 5
+  keys.s.pressed = true
+  lastkey = 's'
   break
   case 'd' : 
-  player.velocity.x = 5
+  keys.d.pressed = true
+  lastkey = 'd'
   break
 }
 console.log(player.velocity)
@@ -112,16 +241,16 @@ console.log(player.velocity)
 addEventListener ('keyup', ({key}) => {
   switch (key) {
     case 'w' : 
-    player.velocity.y = 0
+    keys.w.pressed = false
     break
     case 'a' : 
-    player.velocity.x = 0
+    keys.a.pressed = false
     break
     case 's' : 
-    player.velocity.y = 0
+    keys.s.pressed = false
     break
     case 'd' : 
-    player.velocity.x = 0
+    keys.d.pressed = false
     break
   }
   console.log(player.velocity)
