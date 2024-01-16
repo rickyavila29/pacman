@@ -33,18 +33,38 @@ constructor({position, velocity}) {
   this.position = position
   this.velocity = velocity
   this.radius = 15
+  this.radians = 0.75
+  this.openRate = 0.12
+  this.rotation = 0
 }
 draw () {
+  c.save()
+  c.translate(this.position.x, this.position.y)
+  c.rotate(this.rotation)
+  c.translate(-this.position.x, -this.position.y)
   c.beginPath()
-  c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2)
+  c.arc(
+    this.position.x, 
+    this.position.y, 
+    this.radius, 
+    this.radians, 
+    Math.PI * 2 - this.radians)
+  c.lineTo(
+    this.position.x, 
+    this.position.y)
   c.fillStyle = 'yellow'
   c.fill()
   c.closePath()
+  c.restore()
 }
 update() {
   this.draw()
   this.position.x += this.velocity.x
   this.position.y += this.velocity.y
+
+  if (this.radians < 0 || this.radians > 0.75) this.openRate = -this.openRate
+
+  this.radians += this.openRate
 }
 }
 
@@ -151,7 +171,7 @@ const ghosts = [
 ]
 const player = new Player({
   position: {
-    x: Boundary.width + Boundary.width / 2, 
+    x: Boundary.width * 2 + Boundary.width / 2, 
     y:Boundary.height + Boundary.height / 2
   },
   velocity: {
@@ -180,7 +200,7 @@ let score = 0
 
 const map = [
   ['1', '-', '-', '-', '-', '-', '-', '-', '-', '-', '2'],
-  ['|', '.', '.', '.', '.', '.', '.', '.', '.', '.', '|'],
+  ['|', 'p', '.', '.', '.', '.', '.', '.', '.', 'p', '|'],
   ['|', '.', 'b', '.', '[', '7', ']', '.', 'b', '.', '|'],
   ['|', '.', '.', '.', '.', '_', '.', '.', '.', '.', '|'],
   ['|', '.', '[', ']', '.', '.', '.', '[', ']', '.', '|'],
@@ -190,7 +210,7 @@ const map = [
   ['|', '.', '[', ']', '.', '.', '.', '[', ']', '.', '|'],
   ['|', '.', '.', '.', '.', '^', '.', '.', '.', '.', '|'],
   ['|', '.', 'b', '.', '[', '5', ']', '.', 'b', '.', '|'],
-  ['|', '.', '.', '.', '.', '.', '.', '.', '.', 'p', '|'],
+  ['|', 'p', '.', '.', '.', '.', '.', '.', '.', 'p', '|'],
   ['4', '-', '-', '-', '-', '-', '-', '-', '-', '-', '3']
 ]
 function createImage(src){
@@ -519,12 +539,16 @@ if (
   }
 else {
     cancelAnimationFrame (animationId)
-  console.log('Lose!')
-}
+  console.log('You Lose!')
+    }
 
+  }
 }
+//Win condition
+if (pellets.length === 0) {
+  console.log('You Win!')
+  cancelAnimationFrame(animationId)
 }
-
 
 //Power-Ups
     for (let i = powerUps.length -1; 0 <= i; i--) {
@@ -701,8 +725,15 @@ ghost.prevCollisions = []
 
   
 })
+if (player.velocity.x > 0) player.rotation = 0
+else if (player.velocity.x < 0) player.rotation = Math.PI
+else if (player.velocity.y > 0) player.rotation = Math.PI / 2
+else if (player.velocity.y < 0) player.rotation = Math.PI * 1.5
 
-} 
+
+}
+// End of animation loop
+
 
 animate()
 
